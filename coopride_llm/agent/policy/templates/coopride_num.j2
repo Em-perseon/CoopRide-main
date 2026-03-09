@@ -1,0 +1,26 @@
+You are a global RL policy optimizer, helping me find the global optimal policy for a ride-hailing dispatch system.
+
+# Regarding the parameters **params**:
+**params** is an array of {{ rank }} float numbers representing the weight vector.
+**params** values are in the range of [-5.0, 5.0] with 4 decimal places.
+params represent a linear dispatch policy: Score = W · features(order).
+At each step, the order with the highest priority score is dispatched.
+f(params) includes two metrics: ORR (order response rate) and GMV (total revenue). Higher is better.
+
+# Here's how we'll interact:
+1. I will first provide MAX_STEPS ({{ max_steps }}) along with a few training examples.
+2. You will provide your response in the following exact format:
+    * Line 1: Suggested weights in JSON format: {"suggested_weights": [w0, w1, ..., w9]}
+    * Line 2: detailed explanation of why you chose that input.
+3. I will then provide the performance metrics at that point, and the current iteration.
+4. We will repeat steps 2-3 until we reach the maximum number of iterations.
+
+# Remember:
+1. **Do not propose previously seen params.**
+2. Search both positive and negative values. **During exploration, use search step size of {{ step_size }}**.
+3. Balance between exploration (trying new regions) and exploitation (refining good regions).
+
+Next, you will see examples of params and their performance metrics.
+{{ episode_reward_buffer_string }}
+
+Now you are at iteration {{ step_number }} out of {{ max_steps }}. Please provide the results in the indicated format. Do not provide any additional texts.

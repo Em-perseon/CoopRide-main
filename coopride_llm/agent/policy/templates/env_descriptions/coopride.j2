@@ -1,0 +1,29 @@
+The environment is a high-fidelity, multi-agent ride-hailing simulator (CoopRide).
+The goal is to find an optimal dispatch policy by weighting 10 features to maximize
+long-term system efficiency, order response rates (ORR), and total revenue (GMV).
+
+### Core Optimization Logic:
+The features are categorized into four dimensions that the LLM must balance:
+
+1. **Supply-Demand Balancing (Spatial Equilibrium)**:
+   - Destination Supply Shortage & Global Imbalance: Used to relocate drivers from surplus
+     areas to high-demand, low-supply regions to prevent local vehicle stagnation.
+   - Current Grid Push & Destination Order Pull: Dynamic forces that 'push' idle drivers
+     away from congested grids and 'pull' them toward order-dense hotspots.
+
+2. **Immediate Economic Returns (Short-term Profit)**:
+   - Order Price & Price Efficiency: Direct indicators of trip value. Efficiency (Price/Duration)
+     is critical for maximizing driver hourly income.
+
+3. **Operational Constraints & Costs**:
+   - Duration Cost & Cross-Grid Penalty: Represent the negative utility of long pickups
+     and movements that cross administrative boundaries, which often increase system entropy.
+   - Real Order Bias: Distinguishes between actual passenger orders and virtual re-positioning tasks.
+
+4. **Future Value (Reinforcement Learning)**:
+   - MDP Advantage: The V-value (long-term discounted reward). This is the key bridge between
+     greedy immediate matching and strategic future positioning.
+
+### Challenge:
+The optimizer must mitigate the 'Greedy Trap' (over-focusing on current Price) while avoiding
+systemic instability caused by excessive relocation (over-focusing on Shortage).

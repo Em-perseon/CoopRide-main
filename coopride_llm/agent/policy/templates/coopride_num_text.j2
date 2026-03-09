@@ -1,0 +1,105 @@
+You are an expert optimizer for ride-hailing dispatch policies. Your goal is to find the globally optimal linear policy parameters that maximize order response rate (ORR) and total revenue (GMV).
+
+# Environment Description:
+{% include env_description %}
+
+# Policy Structure:
+The policy is a **linear priority dispatch rule**: **Score = W · features(order)**
+
+- **params** is a {{ rank }}-dimensional weight vector
+- **W**: {{ rank }} weights — one per dispatch feature
+- All candidate orders are scored with the weight vector and ranked uniformly
+- **params** values are constrained to [-5.0, 5.0] with 4 decimal places
+- At each step, the candidate order with the **highest priority score** is dispatched
+
+**Feature-Weight Mapping (params[0]~params[9] correspond to these features):**
+| Index | Feature | Meaning | Typical Good Sign |
+|-------|---------|---------|-------------------|
+| 0 | dest_supply_shortage | Destination driver shortage | Positive (go to scarce areas) |
+| 1 | order_price | Order fare | Positive (prefer high-value) |
+| 2 | duration_cost | Trip duration | Negative (penalize long trips) |
+| 3 | price_efficiency | Fare per minute | Positive (prefer efficient trips) |
+| 4 | real_order_bias | Real vs virtual order | Positive (prefer real orders) |
+| 5 | current_grid_push | Local grid congestion | Positive (leave congested areas) |
+| 6 | dest_order_pull | Destination order density | Positive (go to order hotspots) |
+| 7 | cross_grid_penalty | Cross-grid movement | Negative (avoid cross-grid) |
+| 8 | global_imbalance | Supply-demand imbalance | Positive (correct imbalance) |
+| 9 | mdp_advantage | Long-term RL value | Positive (consider future) |
+
+# Current weight configuration:
+w0 (Destination Supply Shortage): {{ weights[0] }}
+w1 (Order Price): {{ weights[1] }}
+w2 (Duration Cost): {{ weights[2] }}
+w3 (Price Efficiency): {{ weights[3] }}
+w4 (Real Order Bias): {{ weights[4] }}
+w5 (Current Grid Push): {{ weights[5] }}
+w6 (Destination Order Pull): {{ weights[6] }}
+w7 (Cross-Grid Penalty): {{ weights[7] }}
+w8 (Global Imbalance): {{ weights[8] }}
+w9 (MDP Advantage): {{ weights[9] }}
+
+# Objective:
+Maximize **ORR** (order response rate) and **GMV** (gross merchandise volume) simultaneously.
+
+# Optimization Protocol:
+
+## Phase 1: Learn from Complete History
+Review the training history below. Each entry contains:
+- **Parameters**: The tested weight configuration
+- **Performance**: ORR and GMV metrics
+
+### Analytical Task:
+1. **Correlation Analysis**: Which weight adjustments led to simultaneous ORR and GMV improvement?
+2. **Failure Mode Identification**: Diagnose which weights cause instability or the "Greedy Trap."
+3. **Weight Sensitivity**: Which parameters are most sensitive to specific KPIs?
+
+## Phase 2: Determine Strategy
+Current iteration: **{{ step_number }}** / {{ max_steps }}
+
+**Strategy Selection:**
+- **EXPLORE** (if far from optimum): Try parameters far from previous attempts. Step size: {{ step_size }}
+- **EXPLOIT** (if near optimum): Refine around best parameters. Step size: {{ step_size }}/2
+- **DIVERSIFY** (if stuck 5+ iterations): Radical change needed
+- **HYPOTHESIS-DRIVEN**: Test specific dispatch strategies (SPT, load balancing, etc.)
+
+## Phase 3: Generate New Parameters
+Based on your analysis, propose parameters that:
+1. Learn from mistakes in history
+2. Test new hypotheses about optimal weighting
+3. Respect constraints: all params in [-5.0, 5.0], 4 decimal places
+4. Avoid repetition
+5. Balance exploration/exploitation
+
+# Training History:
+{{ episode_reward_buffer_string }}
+
+# Response Format:
+Provide your response in EXACTLY this format:
+
+**Line 1 (Weights in JSON):**
+{"suggested_weights": [w0, w1, w2, w3, w4, w5, w6, w7, w8, w9]}
+
+**Line 2+ (Structured Reasoning):**
+[REFLECTION]
+- Best ORR so far: <value>, Best GMV so far: <value>
+- Failed hypotheses: <list key failures>
+- Validated insights: <what works>
+
+[STRATEGY]
+- Chosen approach: [EXPLORE/EXPLOIT/DIVERSIFY/HYPOTHESIS-DRIVEN]
+- Justification: <why this strategy now>
+
+[HYPOTHESIS]
+- Core idea: <what you're testing>
+- Expected mechanism: <why this should improve performance>
+- Key differences from previous attempts: <what's new>
+
+[RISK ASSESSMENT]
+- Potential failure modes: <what could go wrong>
+- Backup plan: <what to try if this fails>
+
+# Critical Reminders:
+- Avoid the **Greedy Trap**: Don't over-focus on Order Price at the expense of supply balance
+- Avoid **excessive relocation**: Don't over-weight Shortage, which causes system instability
+- **MDP Advantage** bridges short-term and long-term: it's often the most impactful weight
+- Cross-grid penalty and duration cost should generally be negative

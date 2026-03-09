@@ -1,0 +1,48 @@
+# ============================================================
+# CoopRide LLM Weight Optimization Config
+# ============================================================
+# 10-dimensional linear dispatch policy weights,
+# optimized via LLM iterative search.
+
+# ---- LLM parameters ----
+llm_model_name: gpt-4o-mini
+api_key: null                    # null -> read from OPENAI_API_KEY env var
+base_url: "https://api.chatanywhere.tech/v1"
+
+# ---- Signal mode ----
+# num_only: pure numeric signal (params + metrics only)
+# num_text: numeric + text signal (env description + reasoning)
+signal_mode: num_text
+
+# ---- Template ----
+template_dir: agent/policy/templates
+template_name: coopride_num_text.j2
+env_desc_file: agent/policy/templates/env_descriptions/coopride.j2
+
+# ---- Optimization parameters ----
+max_steps: 40                    # max LLM iterations
+num_episodes: 40                 # LLM optimization iterations
+warmup_episodes: 5               # random warmup rounds
+search_step_size: 1.0            # exploration step size
+
+# ---- Policy constraints ----
+weight_range: [-5.0, 5.0]
+weight_precision: 4              # decimal places
+
+# ---- Buffer ----
+max_traj_count: 100
+topK_size: 7                     # top-K records shown to LLM
+
+# ---- Logging ----
+logdir: logs/coopride_llmv1
+seed: 42
+
+# ---- Simulator ----
+# CoopRide environment for weight evaluation
+simulator:
+  grid_num: 121                    # 121 (DiDi 11x11) or 143 (NYU 11x13)
+  # driver_num: 1500               # auto from grid_num if omitted
+  # env_seed: 6                    # auto from grid_num if omitted
+  sample: false                    # false=greedy (deterministic), true=stochastic
+  eval_seed: 1314520               # random seed for evaluation
+  device: cpu                      # cpu or gpu
